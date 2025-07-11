@@ -1,12 +1,12 @@
 
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, CheckCircle, FileText, PenTool } from 'lucide-react';
+import { ArrowLeft, CheckCircle, FileText, PenTool, Calculator, BookOpen } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
-const questionTypes = [
+const defaultQuestionTypes = [
   {
     id: 'mcq',
     name: 'Multiple Choice Questions',
@@ -33,9 +33,31 @@ const questionTypes = [
   }
 ];
 
+const mathsQuestionTypes = [
+  {
+    id: 'combined',
+    name: 'Combined Maths',
+    description: 'Pure mathematics and applied mathematics',
+    icon: Calculator,
+    color: 'bg-blue-600',
+    badge: 'Combined'
+  },
+  {
+    id: 'applied',
+    name: 'Applied Maths',
+    description: 'Statistics, mechanics and other applications',
+    icon: BookOpen,
+    color: 'bg-green-600',
+    badge: 'Applied'
+  }
+];
+
 const QuestionTypeSelection: React.FC = () => {
   const { subjectId, year } = useParams();
   const navigate = useNavigate();
+
+  // Use different question types based on subject
+  const questionTypes = subjectId === 'maths' ? mathsQuestionTypes : defaultQuestionTypes;
 
   const handleTypeClick = (type: string) => {
     navigate(`/subject/${subjectId}/year/${year}/${type}`);
@@ -55,13 +77,18 @@ const QuestionTypeSelection: React.FC = () => {
         
         <div className="text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-2 capitalize">
-            {subjectId} {year} - Question Types
+            {subjectId} {year} - {subjectId === 'maths' ? 'Mathematics Types' : 'Question Types'}
           </h2>
-          <p className="text-gray-600">Choose the type of questions you want to practice</p>
+          <p className="text-gray-600">
+            {subjectId === 'maths' 
+              ? 'Choose the type of mathematics you want to practice'
+              : 'Choose the type of questions you want to practice'
+            }
+          </p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className={`grid grid-cols-1 ${questionTypes.length === 2 ? 'md:grid-cols-2' : 'md:grid-cols-3'} gap-6`}>
         {questionTypes.map((type) => {
           const IconComponent = type.icon;
           
