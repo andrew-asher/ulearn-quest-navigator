@@ -1,31 +1,73 @@
 
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Edit2, Trash2 } from 'lucide-react';
+import { ArrowLeft, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import QuestionSidebar from './QuestionSidebar';
 import QuestionContent from './QuestionContent';
 import AddQuestionModal from './AddQuestionModal';
-import { Question } from '@/types';
+import { Question, MCQOption, SubQuestion } from '@/types';
 
 interface QuestionPageProps {
   isAdmin: boolean;
 }
 
-// Mock data - in a real app, this would come from an API
-const mockQuestions: Question[] = Array.from({ length: 50 }, (_, i) => ({
-  id: `q${i + 1}`,
-  questionText: `Sample question ${i + 1} for practice. This is a detailed question that tests your understanding of the subject matter.`,
-  explanation: `This is the explanation for question ${i + 1}. It provides detailed reasoning and helps you understand the concept better.`,
-  type: 'mcq',
-  subjectId: '',
-  year: '',
-}));
+// Generate mock MCQ options
+const generateMCQOptions = (questionNum: number): MCQOption[] => {
+  return [
+    { id: '1', text: `Option 1 for question ${questionNum}` },
+    { id: '2', text: `Option 2 for question ${questionNum}` },
+    { id: '3', text: `Option 3 for question ${questionNum}` },
+    { id: '4', text: `Option 4 for question ${questionNum}` },
+    { id: '5', text: `Option 5 for question ${questionNum}` },
+  ];
+};
+
+// Generate mock sub-questions for structured/essay
+const generateSubQuestions = (questionNum: number): SubQuestion[] => {
+  return [
+    { id: `${questionNum}-a`, questionText: `(a) Sub-question A for question ${questionNum}`, marks: 2 },
+    { id: `${questionNum}-b`, questionText: `(b) Sub-question B for question ${questionNum}`, marks: 3 },
+    { id: `${questionNum}-c`, questionText: `(c) Sub-question C for question ${questionNum}`, marks: 5 },
+  ];
+};
 
 const QuestionPage: React.FC<QuestionPageProps> = ({ isAdmin }) => {
   const { subjectId, year, questionType } = useParams();
   const navigate = useNavigate();
-  const [questions, setQuestions] = useState<Question[]>(mockQuestions);
+  
+  // Generate questions based on type
+  const generateQuestions = (): Question[] => {
+    const questionCount = questionType === 'mcq' ? 50 : 5;
+    
+    return Array.from({ length: questionCount }, (_, i) => {
+      const questionNum = i + 1;
+      const baseQuestion: Question = {
+        id: `${questionType}-q${questionNum}`,
+        questionText: `${questionType?.toUpperCase()} Question ${questionNum}: This is a sample question for ${subjectId} ${year}. Solve this problem step by step.`,
+        explanation: `Detailed explanation for question ${questionNum}. This explains the concept and solution approach.`,
+        type: questionType as any,
+        subjectId: subjectId!,
+        year: year!,
+        questionNumber: questionNum,
+      };
+
+      if (questionType === 'mcq') {
+        return {
+          ...baseQuestion,
+          options: generateMCQOptions(questionNum),
+          answer: '1', // Correct option ID
+        };
+      } else {
+        return {
+          ...baseQuestion,
+          subQuestions: generateSubQuestions(questionNum),
+        };
+      }
+    });
+  };
+
+  const [questions, setQuestions] = useState<Question[]>(generateQuestions());
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [showAddModal, setShowAddModal] = useState(false);
 
@@ -34,14 +76,24 @@ const QuestionPage: React.FC<QuestionPageProps> = ({ isAdmin }) => {
   const handleAddQuestion = (question: Omit<Question, 'id'>) => {
     const newQuestion: Question = {
       ...question,
-      id: `q${questions.length + 1}`,
+      id: `${questionType}-q${questions.length + 1}`,
+      questionNumber: questions.length + 1,
     };
     setQuestions([...questions, newQuestion]);
   };
 
   const handleDeleteQuestion = (questionId: string) => {
-    setQuestions(questions.filter(q => q.id !== questionId));
-    if (currentQuestionIndex >= questions.length - 1 && currentQuestionIndex > 0) {
+    const updatedQuestions = questions.filter(q => q.id !== questionId);
+    // Renumber remaining questions
+    const renumberedQuestions = updatedQuestions.map((q, index) => ({
+      ...q,
+      questionNumber: index + 1,
+      id: `${questionType}-q${index + 1}`,
+    }));
+    
+    setQuestions(renumberedQuestions);
+    
+    if (currentQuestionIndex >= renumberedQuestions.length && currentQuestionIndex > 0) {
       setCurrentQuestionIndex(currentQuestionIndex - 1);
     }
   };
@@ -104,6 +156,7 @@ const QuestionPage: React.FC<QuestionPageProps> = ({ isAdmin }) => {
         questionType={questionType as any}
         subjectId={subjectId!}
         year={year!}
+        nextQuestionNumber={questions.length + 1}
       />
     </div>
   );
