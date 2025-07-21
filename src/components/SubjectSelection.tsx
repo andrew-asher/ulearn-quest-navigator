@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Calculator, Atom, Zap, Flask } from 'lucide-react';
+import { Plus, Calculator, Atom, Zap, Beaker } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Subject } from '@/types';
@@ -16,7 +16,7 @@ const iconMap = {
   Calculator,
   Atom,
   Zap,
-  Flask,
+  Beaker,
 };
 
 // Updated subjects list with softer, more elegant colors
@@ -24,7 +24,7 @@ const defaultSubjects: Subject[] = [
   { id: 'maths', name: 'Mathematics', icon: 'Calculator', color: 'bg-gradient-to-br from-blue-100 to-blue-200' },
   { id: 'biology', name: 'Biology', icon: 'Atom', color: 'bg-gradient-to-br from-emerald-100 to-emerald-200' },
   { id: 'physics', name: 'Physics', icon: 'Zap', color: 'bg-gradient-to-br from-purple-100 to-purple-200' },
-  { id: 'chemistry', name: 'Chemistry', icon: 'Flask', color: 'bg-gradient-to-br from-orange-100 to-orange-200' },
+  { id: 'chemistry', name: 'Chemistry', icon: 'Beaker', color: 'bg-gradient-to-br from-orange-100 to-orange-200' },
 ];
 
 const SubjectSelection: React.FC<SubjectSelectionProps> = ({ isAdmin }) => {
